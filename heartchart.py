@@ -17,23 +17,39 @@ msg = '❤️'
 msg2 = '♥'
 search = 'HeartChart'
 
-print("Please enter the handle id:")
-handleId = sys.stdin.readline()[:-1]
+# in handle table:
+# id is phone number/email (with +1 on the phone numbers usually)
+# ROWID is the handle to the person
+
+print("Please enter the phone number or email of the conversation you want to chart:")
+conv_id = sys.stdin.readline()[:-1]
+c.execute('SELECT ROWID,id FROM handle WHERE id LIKE "%{mn}%"'.\
+        format(mn=conv_id))
+handles = c.fetchall()
+if len(handles) != 0:
+        print("Found", len(handles), "associated handles")
+else:
+        print("No match found, try again")
+
 print("Would you like to search for hearts? (y/n)")
 ans = sys.stdin.readline()[:-1]
 
-if ans == 'y':
-    c.execute('SELECT {cn},date,is_from_me FROM {tn} WHERE ({cn} LIKE "%{mn}%" OR {cn} LIKE "%{mn2}%") AND message.handle_id == {id}'.\
-        format(tn=table_name, cn=column, mn=msg, mn2=msg2, id=handleId))
-elif ans == 'n':
-    print("What would you like to search for?")
-    search = sys.stdin.readline()[:-1]
-    c.execute('SELECT {cn},date,is_from_me FROM {tn} WHERE {cn} LIKE "%{mn}%" AND message.handle_id == {id}'.\
-        format(tn=table_name, cn=column, mn=search, id=handleId))
-else:
-    print("Please retry with either 'y' or 'n'")
+rows = []
+if ans == 'n':
+        print("What would you like to search for?")
+        search = sys.stdin.readline()[:-1]
 
-rows = c.fetchall()
+for handle in handles:
+        if ans == 'y':
+                c.execute('SELECT {cn},date,is_from_me FROM {tn} WHERE ({cn} LIKE "%{mn}%" OR {cn} LIKE "%{mn2}%") AND message.handle_id == {id}'.\
+                        format(tn=table_name, cn=column, mn=msg, mn2=msg2, id=handle[0]))
+        elif ans == 'n':
+                c.execute('SELECT {cn},date,is_from_me FROM {tn} WHERE {cn} LIKE "%{mn}%" AND message.handle_id == {id}'.\
+                        format(tn=table_name, cn=column, mn=search, id=handle[0]))
+        else:
+                print("Please retry with either 'y' or 'n'")
+
+        rows.extend(c.fetchall())
 
 print(len(rows), "matches found")
 
@@ -73,5 +89,5 @@ if len(rows) != 0:
         plt.plot(full_me)
         plt.plot(full_you)
         plt.title(search)
-        plt.pause(100)
+        plt.pause(5)
 conn.close()
