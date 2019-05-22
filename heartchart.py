@@ -85,9 +85,13 @@ if len(rows) != 0:
 
         full_me = np.append(weekCount17me,weekCount18me)
         full_you = np.append(weekCount17you,weekCount18you)
-        plt.ion()
-        plt.plot(full_me)
-        plt.plot(full_you)
+        
+        plt.plot(full_me, label='me')
+        plt.plot(full_you, label=conv_id)
         plt.title(search)
+        plt.ylabel('matching messages') #doesn't propoerly display emoji as axis label, so don't include
+        plt.xlabel('weeks')
+        plt.legend(loc='upper left')
+        plt.show()
         plt.pause(5)
 conn.close()
